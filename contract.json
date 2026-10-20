@@ -1,10 +1,10 @@
 {
   "base_url": "http://localhost:8000",
-  "resource": "items",
+  "resource": "courses",
   "id_field": "id",
   "missing_id": "999999",
   "list_key": null,
-  "create": { "title": "Первая запись" },
-  "update": { "title": "Изменённая запись" },
+  "create": { "title": "Backend", "teacher": "Божедомов", "seats": 20 },
+  "update": { "seats": 30 },
   "required_field": "title"
 }
