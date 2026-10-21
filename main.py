@@ -1,6 +1,6 @@
 #Основной файлик с апи 
 from fastapi import FastAPI, HTTPException, status, Request
-from typing import List
+from typing import List, Optional
 
 from models import CourseCreate, CourseUpdate, CourseResponse
 
@@ -25,8 +25,14 @@ def create_course(course: CourseCreate):
 	return new_course
 
 @app.get("/api/courses", response_model=List[CourseResponse])
-def get_courses():
-	return courses_db
+def get_courses(limit: int = 10, offset: int = 0, title: Optional[str] = None,
+teacher: Optional[str] = None):
+    result = list(courses_db)
+    if title:
+        result = [c for c in result if title.lower() in c["title"].lower()]
+    if teacher:
+        result = [c for c in result if teacher.lower() in c["teacher"].lower()]
+    return result[offset : offset + limit]
 
 @app.get("/api/courses/{course_id}", response_model=CourseResponse)
 def get_course(course_id: int):
