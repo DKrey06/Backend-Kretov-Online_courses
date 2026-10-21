@@ -1,5 +1,5 @@
 #Основной файлик с апи 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Request
 from typing import List
 
 from models import CourseCreate, CourseUpdate, CourseResponse
@@ -66,8 +66,10 @@ def delete_course(course_id: int):
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request, exc):
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    error = exc.errors()[0]
+    field_name = str(error["loc"][-1])
     return JSONResponse(
-        status_code=400,
-        content={"error": "Ошибка валидации данных"}
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"error": error["msg"], "field": field_name}
     )

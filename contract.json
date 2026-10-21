@@ -6,5 +6,10 @@
   "list_key": null,
   "create": { "title": "Backend", "teacher": "Божедомов", "seats": 20 },
   "update": { "seats": 30 },
-  "required_field": "title"
+  "required_field": "title",
+  "errors": [
+    { "body": { "title": "", "teacher": "Божедомов", "seats": 20 }, "field": "title" },
+    { "body": { "title": "Backend", "teacher": "", "seats": 20 }, "field": "teacher" },
+    { "body": { "title": "Backend", "teacher": "Божедомов", "seats": -5 }, "field": "seats" }
+  ]
 }
