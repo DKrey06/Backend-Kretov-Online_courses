@@ -7,7 +7,18 @@ from models import CourseCreate, CourseUpdate, CourseResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+import time
+
 app = FastAPI(title="API Онлайн-курсов")
+
+#Для логов
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+     start_time = time.time()
+     response = await call_next(request)
+     process_time = (time.time() - start_time) *1000
+     print(f"{request.method} {request.url.path} {response.status_code} {process_time:.1f}ms")
+     return response
 
 courses_db = []
 current_id = 1
