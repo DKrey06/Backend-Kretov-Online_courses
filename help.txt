@@ -1,0 +1,18 @@
+#VENV
+.\venv\Scripts\activate
+
+#Запуск сервера
+uvicorn main:app --reload
+
+#Чекер 1 лабы
+backcheck --lab 1            # пункты лабы 1
+backcheck --lab 1 --stars    # пункты и звёздочки
+
+Ещё флаги:
+
+Флаг	Что делает
+--only 3	Проверить только пункт 3
+--all	Проверить все лабы с 1 по N
+-v	Показать каждый запрос и ответ
+--url URL	Другой адрес сервиса
+backcheck ask --lab 1 #Вопрос по 1 лабе

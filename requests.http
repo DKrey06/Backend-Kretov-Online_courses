@@ -8,37 +8,50 @@
 GET {{base}}/health
 
 ### Создать
-POST {{base}}/api/items
+POST {{base}}/api/courses
 Content-Type: application/json
 
-{ "title": "Первая запись" }
+{ 
+  "title": "Дифференциальные уравнения", 
+  "teacher": "Чеботарёв", 
+  "seats": 15 
+}
 
 ### Список
-GET {{base}}/api/items
+GET {{base}}/api/courses
 
 ### Получить одну запись
-GET {{base}}/api/items/1
+GET {{base}}/api/courses/1
 
 ### Изменить
-PATCH {{base}}/api/items/1
+PATCH {{base}}/api/courses/1
 Content-Type: application/json
 
-{ "title": "Изменённая запись" }
+{ "seats": 15 }
+
+PUT {{base}}/api/courses/1
+Content-Type: application/json
+
+{ 
+  "title": "Дифференциальные уравнения ДЛЯ КРУТЫШЕК", 
+  "teacher": "Яровенко", 
+  "seats": 10 
+}
 
 ### Удалить
-DELETE {{base}}/api/items/1
+DELETE {{base}}/api/courses/1
 
 ### После удаления должен быть 404
-GET {{base}}/api/items/1
+GET {{base}}/api/courses/1
 
 ### Сломанный JSON, должен быть 400
-POST {{base}}/api/items
+POST {{base}}/api/courses
 Content-Type: application/json
 
 { "title":
 
 ### Пустое обязательное поле, должен быть 400
-POST {{base}}/api/items
+POST {{base}}/api/courses
 Content-Type: application/json
 
 { "title": "" }
