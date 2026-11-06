@@ -16,3 +16,7 @@ backcheck --lab 1 --stars    # пункты и звёздочки
 -v	Показать каждый запрос и ответ
 --url URL	Другой адрес сервиса
 backcheck ask --lab 1 #Вопрос по 1 лабе
+
+#Для БД:
+psql -U postgres
+\q

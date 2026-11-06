@@ -23,13 +23,14 @@ GET {{base}}/api/courses
 ### Получить одну запись
 GET {{base}}/api/courses/1
 
-### Изменить
-PATCH {{base}}/api/courses/1
+### Изменить частично
+PATCH {{base}}/api/courses/7
 Content-Type: application/json
 
-{ "seats": 15 }
+{ "seats": 17 }
 
-PUT {{base}}/api/courses/1
+### Изменить полностью
+PUT {{base}}/api/courses/7
 Content-Type: application/json
 
 { 
