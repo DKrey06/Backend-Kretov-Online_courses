@@ -38,15 +38,17 @@ uvicorn main:app --reload
 
 ## Эндпоинты
 
-| Метод  | Путь                | Что делает               | Ответ                               |
-| ------ | ------------------- | ------------------------ | ----------------------------------- |
-| GET    | `/health`           | Проверка, что сервис жив | 200 `{"status":"ok"}`               |
-| POST   | `/api/courses`      | Создать курс             | 201 и объект с `id`; 400 при ошибке |
-| GET    | `/api/courses`      | Список курсов            | 200                                 |
-| GET    | `/api/courses/{id}` | Получить однин курс      | 200; 404                            |
-| PATCH  | `/api/courses/{id}` | Частично изменить        | 200; 400; 404                       |
-| PUT    | `/api/courses/{id}` | Полностью заменить       | 200; 400; 404                       |
-| DELETE | `/api/courses/{id}` | Удалить                  | 204; 404                            |
+| Метод  | Путь                            | Что делает               | Ответ                               |
+| ------ | ------------------------------- | ------------------------ | ----------------------------------- |
+| GET    | `/health`                       | Проверка, что сервис жив | 200 `{"status":"ok"}`               |
+| POST   | `/api/courses`                  | Создать курс             | 201 и объект с `id`; 400 при ошибке |
+| GET    | `/api/courses`                  | Список курсов            | 200                                 |
+| GET    | `/api/courses/{id}`             | Получить однин курс      | 200; 404                            |
+| PATCH  | `/api/courses/{id}`             | Частично изменить        | 200; 400; 404                       |
+| PUT    | `/api/courses/{id}`             | Полностью заменить       | 200; 400; 404                       |
+| DELETE | `/api/courses/{id}`             | Удалить                  | 204; 404                            |
+| POST   | `/api/courses/{id}/enrollments` | Создать запись на курс   | 201 и объект записи; 400/404        |
+| GET    | `/api/courses/{id}/enrollments` | Список записей курса     | 200                                 |
 
 ## ER-диаграмма
 
@@ -54,14 +56,19 @@ uvicorn main:app --reload
 
 ```mermaid
 erDiagram
-    parents ||--o{ children : "имеет"
-    parents {
+    courses ||--o{ enrollments : "имеет"
+    courses {
         int id PK
         varchar title
+        varchar teacher
+        int seats
     }
-    children {
+    enrollments {
         int id PK
-        int parent_id FK
+        varchar student
+        varchar email
+        date enrolled_at
+        int course_id FK
     }
 ```
 

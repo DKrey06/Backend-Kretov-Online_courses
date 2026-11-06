@@ -40,7 +40,7 @@ Content-Type: application/json
 }
 
 ### Удалить
-DELETE {{base}}/api/courses/1
+DELETE {{base}}/api/courses/12
 
 ### После удаления должен быть 404
 GET {{base}}/api/courses/1
@@ -56,3 +56,22 @@ POST {{base}}/api/courses
 Content-Type: application/json
 
 { "title": "" }
+
+### Создать запись на курс
+POST {{base}}/api/courses/10/enrollments
+Content-Type: application/json
+
+{ 
+  "student": "Петр Петров", 
+  "email": "petrov@example.com", 
+  "enrolled_at": "2026-11-01" 
+}
+
+### Список записей на курс
+GET {{base}}/api/courses/10/enrollments
+
+### Проверка SQL-инъекции
+POST {{base}}/api/courses
+Content-Type: application/json
+
+{ "title": "'); DROP TABLE courses;--", "teacher": "Хакер", "seats": 0 }
