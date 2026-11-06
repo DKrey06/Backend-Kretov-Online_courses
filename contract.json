@@ -4,6 +4,7 @@
   "id_field": "id",
   "missing_id": "999999",
   "list_key": null,
+  "text_field": "title",
   "create": { "title": "Backend", "teacher": "Божедомов", "seats": 20 },
   "update": { "seats": 30 },
   "required_field": "title",
@@ -12,5 +13,10 @@
     { "body": { "title": "Backend", "teacher": "", "seats": 20 }, "field": "teacher" },
     { "body": { "title": "Backend", "teacher": "Божедомов", "seats": -5 }, "field": "seats" }
   ],
-  "filter": {"param": "teacher", "value": "Божедомов", "other": "Пушкин"}
+  "filter": {"param": "teacher", "value": "Божедомов", "other": "Пушкин"},
+  "child": {
+    "resource": "enrollments",
+    "create": { "student": "Иванов Иван", "email": "ivanov@example.com", "enrolled_at": "2026-10-01" },
+    "parent_field": "course_id"
+  }
 }
