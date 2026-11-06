@@ -19,5 +19,14 @@
     "resource": "enrollments",
     "create": { "student": "Иванов Иван", "email": "ivanov@example.com", "enrolled_at": "2026-10-01" },
     "parent_field": "course_id"
+  },
+  "rule": {
+    "description": "Нельзя записаться на курс, если мест не осталось",
+    "parent": { "seats": 1 },
+    "setup": [
+      { "method": "POST", "path": "/api/courses/{id}/enrollments", "body": { "student": "Иванов", "email": "ivanov@example.com", "enrolled_at": "2026-10-01" } }
+    ],
+    "violate": { "method": "POST", "path": "/api/courses/{id}/enrollments", "body": { "student": "Петров", "email": "petrov@example.com", "enrolled_at": "2026-10-02" } },
+    "expect_status": 409
   }
 }

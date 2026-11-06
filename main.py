@@ -153,22 +153,44 @@ def create_enrollment(course_id: int, enrollment: EnrollmentCreate):
     conn = get_db_connection()
     cur = conn.cursor()
     
-    cur.execute("SELECT id FROM courses WHERE id = %s", (course_id,))
-    if not cur.fetchone():
+    try:
+        #Блок строки курса, чтобы никто не изменил seats во время проверки
+        cur.execute("SELECT seats FROM courses WHERE id = %s FOR UPDATE", (course_id,))
+        course = cur.fetchone()
+        
+        if not course:
+            raise HTTPException(status_code=404, detail="Курс не найден")
+        
+        seats_total = course[0]
+        
+        cur.execute("SELECT COUNT(*) FROM enrollments WHERE course_id = %s", (course_id,))
+        enrolled_count = cur.fetchone()[0]
+        
+        if enrolled_count >= seats_total:
+            raise HTTPException(
+                status_code=409, 
+                detail="На курс больше нет свободных мест"
+            )
+        
+        cur.execute(
+            "INSERT INTO enrollments (student, email, enrolled_at, course_id) VALUES (%s, %s, %s, %s) RETURNING id",
+            (enrollment.student, enrollment.email, enrollment.enrolled_at, course_id)
+        )
+        new_id = cur.fetchone()[0]
+        
+        conn.commit()
+        
+        return {"id": new_id, "course_id": course_id, **enrollment.model_dump()}
+    
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Ошибка базы данных: {e}")
+    finally:
         cur.close()
         conn.close()
-        raise HTTPException(status_code=404, detail="Курс не найден")
-        
-    cur.execute(
-        "INSERT INTO enrollments (student, email, enrolled_at, course_id) VALUES (%s, %s, %s, %s) RETURNING id",
-        (enrollment.student, enrollment.email, enrollment.enrolled_at, course_id)
-    )
-    new_id = cur.fetchone()[0]
-    conn.commit()
-    cur.close()
-    conn.close()
-    
-    return {"id": new_id, "course_id": course_id, **enrollment.model_dump()}
 
 @app.get("/api/courses/{course_id}/enrollments", response_model=List[EnrollmentResponse])
 def get_enrollments(course_id: int):

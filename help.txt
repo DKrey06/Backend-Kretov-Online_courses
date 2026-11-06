@@ -24,6 +24,9 @@ psql -U postgres
 \c courses_db --подключение к базе
 DROP TABLE IF EXISTS enrollments;
 DROP TABLE IF EXISTS courses;
+
+DELETE FROM alembic_version; удаление таблицы миграции
+
 \dt
 \q
 
