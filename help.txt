@@ -4,7 +4,7 @@
 #Запуск сервера
 uvicorn main:app --reload
 
-#Чекер 1 лабы
+#Чекер лаб
 backcheck --lab 1            # пункты лабы 1
 backcheck --lab 1 --stars    # пункты и звёздочки
 backcheck --lab 2
@@ -26,3 +26,12 @@ DROP TABLE IF EXISTS enrollments;
 DROP TABLE IF EXISTS courses;
 \dt
 \q
+
+#Про миграции на Alembic
+alembic revision -m "..." Создание файла миграции 
+alembic upgrade head Применение миграции
+alembic downgrade -1 Откат миграции
+
+SET enable_seqscan = off;
+EXPLAIN ANALYZE SELECT * FROM courses WHERE title = 'Backend на FastAPI';
+SET enable_seqscan = on;

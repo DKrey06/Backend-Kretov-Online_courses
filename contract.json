@@ -5,6 +5,7 @@
   "missing_id": "999999",
   "list_key": null,
   "text_field": "title",
+  "search": { "param": "q", "field": "title" },
   "create": { "title": "Backend", "teacher": "Божедомов", "seats": 20 },
   "update": { "seats": 30 },
   "required_field": "title",

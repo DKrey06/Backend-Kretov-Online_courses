@@ -30,8 +30,14 @@ python -m venv venv
 # 3. Установить зависимости
 pip install -r requirements.txt
 
-# 4. Запустить сервер
+# 4. Применить миграции базы данных
+alembic upgrade head
+
+# 5. Запустить сервер
 uvicorn main:app --reload
+
+# 6. Заполнить БД тестовыми данными (опционально)
+python seed.py
 ```
 
 Сервис работает на `http://localhost:8000`. Запросы для демонстрации лежат в `requests.http`.
@@ -70,6 +76,30 @@ erDiagram
         date enrolled_at
         int course_id FK
     }
+```
+
+## Индекс и EXPLAIN
+
+Для ускорения поиска по названию курса создан индекс `ix_courses_title` на колонку `title` (создан через Alembic-миграцию).
+
+Пример запроса и его план выполнения:
+
+```sql
+EXPLAIN ANALYZE SELECT * FROM courses WHERE title = 'Backend на FastAPI';
+```
+
+Вывод:
+
+```
+ Index Scan using ix_courses_title on courses  (cost=0.15..8.17 rows=1 width=32) (actual time=0.023..0.024 rows=0.00 loops=1)
+   Index Cond: ((title)::text = 'Backend на FastAPI'::text)
+   Index Searches: 1
+   Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=35
+ Planning Time: 2.580 ms
+ Execution Time: 0.043 ms
+(8 строк)
 ```
 
 ## Интерфейс
