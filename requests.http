@@ -75,3 +75,6 @@ POST {{base}}/api/courses
 Content-Type: application/json
 
 { "title": "'); DROP TABLE courses;--", "teacher": "Хакер", "seats": 0 }
+
+### Поиск по названию (без учета регистра)
+GET {{base}}/api/courses?q=дифференциальные

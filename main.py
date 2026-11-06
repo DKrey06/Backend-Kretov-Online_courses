@@ -46,12 +46,16 @@ def create_course(course: CourseCreate):
     return {"id": new_id, **course.model_dump()} 
 
 @app.get("/api/courses", response_model=List[CourseResponse])
-def get_courses(limit: int = 10, offset: int = 0, title: Optional[str] = None,
+def get_courses(limit: int = 10, offset: int = 0, q: Optional[str] = None, title: Optional[str] = None,
 teacher: Optional[str] = None):
     conn = get_db_connection()
     cur = conn.cursor()
     query = "SELECT id, title, teacher, seats FROM courses WHERE 1=1"
     params = []
+
+    if q: 
+        query += " AND title ILIKE %s"
+        params.append(f"%{q}%")
     
     if title:
         query += " AND title ILIKE %s"
