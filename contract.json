@@ -28,5 +28,6 @@
     ],
     "violate": { "method": "POST", "path": "/api/courses/{id}/enrollments", "body": { "student": "Петров", "email": "petrov@example.com", "enrolled_at": "2026-10-02" } },
     "expect_status": 409
-  }
+  },
+  "stats_path": "/api/courses/stats"
 }

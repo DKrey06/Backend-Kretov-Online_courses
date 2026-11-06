@@ -74,6 +74,37 @@ teacher: Optional[str] = None):
     
     return [{"id": r[0], "title": r[1], "teacher": r[2], "seats": r[3]} for r in rows]
 
+@app.get("/api/courses/stats")
+def get_course_stats():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    #Агрегатный запрос. Считаем количество записей на каждый курс
+    cur.execute("""
+        SELECT c.id, c.title, c.seats, COUNT(e.id) as enrolled
+        FROM courses c
+        LEFT JOIN enrollments e ON c.id = e.course_id
+        GROUP BY c.id, c.title, c.seats
+        ORDER BY c.id
+    """)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    
+    stats = []
+    for r in rows:
+        course_id, title, seats, enrolled = r
+        percent = round((enrolled / seats * 100), 1) if seats > 0 else 0.0
+        stats.append({
+            "course_id": course_id,
+            "title": title,
+            "seats": seats,
+            "enrolled": enrolled,
+            "fill_percent": percent
+        })
+        
+    return stats
+
 @app.get("/api/courses/{course_id}", response_model=CourseResponse)
 def get_course(course_id: int):
     conn = get_db_connection()
