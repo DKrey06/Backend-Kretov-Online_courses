@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS courses (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    teacher VARCHAR(255) NOT NULL,
+    seats INTEGER NOT NULL CHECK (seats >= 0)
+);
+
+CREATE TABLE IF NOT EXISTS enrollments (
+    id SERIAL PRIMARY KEY,
+    student VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    enrolled_at DATE NOT NULL,
+    course_id INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE
+);
