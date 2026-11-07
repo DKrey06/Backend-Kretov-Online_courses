@@ -4,6 +4,8 @@
   "id_field": "id",
   "missing_id": "999999",
   "list_key": null,
+  "text_field": "title",
+  "search": { "param": "q", "field": "title" },
   "create": { "title": "Backend", "teacher": "Божедомов", "seats": 20 },
   "update": { "seats": 30 },
   "required_field": "title",
@@ -12,5 +14,20 @@
     { "body": { "title": "Backend", "teacher": "", "seats": 20 }, "field": "teacher" },
     { "body": { "title": "Backend", "teacher": "Божедомов", "seats": -5 }, "field": "seats" }
   ],
-  "filter": {"param": "teacher", "value": "Божедомов", "other": "Пушкин"}
+  "filter": {"param": "teacher", "value": "Божедомов", "other": "Пушкин"},
+  "child": {
+    "resource": "enrollments",
+    "create": { "student": "Иванов Иван", "email": "ivanov@example.com", "enrolled_at": "2026-10-01" },
+    "parent_field": "course_id"
+  },
+  "rule": {
+    "description": "Нельзя записаться на курс, если мест не осталось",
+    "parent": { "seats": 1 },
+    "setup": [
+      { "method": "POST", "path": "/api/courses/{id}/enrollments", "body": { "student": "Иванов", "email": "ivanov@example.com", "enrolled_at": "2026-10-01" } }
+    ],
+    "violate": { "method": "POST", "path": "/api/courses/{id}/enrollments", "body": { "student": "Петров", "email": "petrov@example.com", "enrolled_at": "2026-10-02" } },
+    "expect_status": 409
+  },
+  "stats_path": "/api/courses/stats"
 }
