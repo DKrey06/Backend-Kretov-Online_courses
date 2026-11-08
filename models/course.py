@@ -13,3 +13,4 @@ class CourseUpdate(BaseModel):
 
 class CourseResponse(CourseCreate):
     id: int
+    owner_id: int

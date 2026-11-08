@@ -1,4 +1,5 @@
 from db.database import get_db_connection
+from auth import get_password_hash
 
 def seed():
     conn = get_db_connection()
@@ -7,6 +8,20 @@ def seed():
     #Очищаем таблицы
     cur.execute("TRUNCATE enrollments, courses RESTART IDENTITY CASCADE;")
     
+    #Создаем тестового пользователя для привязки курсов
+    hashed_pw = get_password_hash("secret123")
+    cur.execute(
+        "INSERT INTO users (username, hashed_password) VALUES (%s, %s) ON CONFLICT (username) DO NOTHING RETURNING id",
+        ("testuser", hashed_pw)
+    )
+    row = cur.fetchone()
+    if row:
+        owner_id = row[0]
+    else:
+        #Если пользователь уже существовал, достаем его ID
+        cur.execute("SELECT id FROM users WHERE username = %s", ("testuser",))
+        owner_id = cur.fetchone()[0]
+    
     courses = [
         ("Python для начинающих", "Иванов", 20),
         ("Backend на FastAPI", "Петров", 15),
@@ -14,8 +29,8 @@ def seed():
     ]
     for title, teacher, seats in courses:
         cur.execute(
-            "INSERT INTO courses (title, teacher, seats) VALUES (%s, %s, %s)",
-            (title, teacher, seats)
+            "INSERT INTO courses (title, teacher, seats, owner_id) VALUES (%s, %s, %s, %s)",
+            (title, teacher, seats, owner_id)
         )
         
     enrollments = [

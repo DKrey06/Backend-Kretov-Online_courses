@@ -74,14 +74,15 @@ def create_course(course: CourseCreate, current_user: dict = Depends(get_current
     conn.commit()
     cur.close()
     conn.close()
-    return {"id": new_id, **course.model_dump()} 
+    return {"id": new_id, "owner_id": current_user["id"], **course.model_dump()} 
 
 @app.get("/api/courses", response_model=List[CourseResponse])
 def get_courses(limit: int = 10, offset: int = 0, q: Optional[str] = None, title: Optional[str] = None,
 teacher: Optional[str] = None):
     conn = get_db_connection()
     cur = conn.cursor()
-    query = "SELECT id, title, teacher, seats FROM courses WHERE 1=1"
+
+    query = "SELECT id, title, teacher, seats, owner_id FROM courses WHERE 1=1"
     params = []
 
     if q: 
@@ -103,7 +104,7 @@ teacher: Optional[str] = None):
     cur.close()
     conn.close()
     
-    return [{"id": r[0], "title": r[1], "teacher": r[2], "seats": r[3]} for r in rows]
+    return [{"id": r[0], "title": r[1], "teacher": r[2], "seats": r[3], "owner_id": r[4]} for r in rows]
 
 @app.get("/api/courses/stats")
 def get_course_stats():
@@ -140,7 +141,8 @@ def get_course_stats():
 def get_course(course_id: int):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, title, teacher, seats FROM courses WHERE id = %s", (course_id,))
+
+    cur.execute("SELECT id, title, teacher, seats, owner_id FROM courses WHERE id = %s", (course_id,))
     row = cur.fetchone()
     cur.close()
     conn.close()
@@ -148,7 +150,7 @@ def get_course(course_id: int):
     if not row:
         raise HTTPException(status_code=404, detail="Курс не найден :(")
         
-    return {"id": row[0], "title": row[1], "teacher": row[2], "seats": row[3]}
+    return {"id": row[0], "title": row[1], "teacher": row[2], "seats": row[3], "owner_id": row[4]}
 
 @app.put("/api/courses/{course_id}", response_model=CourseResponse)
 def update_course_put(course_id: int, course_data: CourseCreate, current_user: dict = Depends(get_current_user)):
@@ -179,7 +181,7 @@ def update_course_put(course_id: int, course_data: CourseCreate, current_user: d
     if not updated:
         raise HTTPException(status_code=404, detail="Курс не найден")
         
-    return {"id": course_id, **course_data.model_dump()}
+    return {"id": course_id, "owner_id": current_user["id"], **course_data.model_dump()}
 
 @app.patch("/api/courses/{course_id}", response_model=CourseResponse)
 def update_course_patch(course_id: int, course_update: CourseUpdate, current_user: dict = Depends(get_current_user)):
@@ -217,7 +219,7 @@ def update_course_patch(course_id: int, course_update: CourseUpdate, current_use
     if not updated:
         raise HTTPException(status_code=404, detail="Курс не найден")
         
-    return {"id": updated[0], "title": updated[1], "teacher": updated[2], "seats": updated[3]}
+    return {"id": updated[0], "title": updated[1], "teacher": updated[2], "seats": updated[3], "owner_id": current_user["id"]}
 
 @app.delete("/api/courses/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_course(course_id: int, current_user: dict = Depends(get_current_user)):
@@ -247,7 +249,7 @@ def delete_course(course_id: int, current_user: dict = Depends(get_current_user)
 
 
 @app.post("/api/courses/{course_id}/enrollments", response_model=EnrollmentResponse, status_code=status.HTTP_201_CREATED)
-def create_enrollment(course_id: int, enrollment: EnrollmentCreate):
+def create_enrollment(course_id: int, enrollment: EnrollmentCreate, current_user: dict = Depends(get_current_user)):
     conn = get_db_connection()
     cur = conn.cursor()
     

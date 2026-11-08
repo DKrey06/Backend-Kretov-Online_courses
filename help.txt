@@ -9,6 +9,8 @@ backcheck --lab 1            # пункты лабы 1
 backcheck --lab 1 --stars    # пункты и звёздочки
 backcheck --lab 2
 backcheck --lab 2 --stars 
+backcheck --lab 3
+backcheck --lab 3 --stars 
 
 Ещё флаги:
 
@@ -29,6 +31,8 @@ DELETE FROM alembic_version; удаление таблицы миграции
 
 \dt
 \q
+
+SELECT username, hashed_password FROM users; --Проверить хешированные пароли
 
 #Про миграции на Alembic
 alembic revision -m "..." Создание файла миграции 
