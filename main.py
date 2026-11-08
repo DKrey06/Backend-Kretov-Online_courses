@@ -1,8 +1,10 @@
 #Основной файлик с апи 
-from fastapi import FastAPI, HTTPException, status, Request
+from fastapi import FastAPI, HTTPException, status, Request, Depends
 from typing import List, Optional
 
 from models import CourseCreate, CourseUpdate, CourseResponse, EnrollmentCreate, EnrollmentResponse
+from models import UserCreate, UserResponse
+from auth import get_password_hash, get_current_user
 
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -31,13 +33,42 @@ async def add_process_time_header(request: Request, call_next):
 def health_check():
 	return{"status": "ok"}
 
+#Авторизация
+@app.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def register(user: UserCreate):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    #Проверка, нет ли такого пользователя
+    cur.execute("SELECT id FROM users WHERE username = %s", (user.username,))
+    if cur.fetchone():
+        cur.close()
+        conn.close()
+        raise HTTPException(status_code=409, detail="Пользователь с таким логином уже существует")
+        
+    hashed = get_password_hash(user.password)
+    cur.execute(
+        "INSERT INTO users (username, hashed_password) VALUES (%s, %s) RETURNING id",
+        (user.username, hashed)
+    )
+    new_id = cur.fetchone()[0]
+    conn.commit()
+    cur.close()
+    conn.close()
+    return {"id": new_id, "username": user.username}
+
+@app.get("/auth/me", response_model=UserResponse)
+def get_me(current_user: dict = Depends(get_current_user)):
+    return current_user
+
+#Курсы
 @app.post("/api/courses", response_model=CourseResponse, status_code=status.HTTP_201_CREATED)
-def create_course(course: CourseCreate):
+def create_course(course: CourseCreate, current_user: dict = Depends(get_current_user)):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO courses (title, teacher, seats) VALUES (%s, %s, %s) RETURNING id",
-        (course.title, course.teacher, course.seats)
+        "INSERT INTO courses (title, teacher, seats, owner_id) VALUES (%s, %s, %s, %s) RETURNING id",
+        (course.title, course.teacher, course.seats, current_user["id"])
     )
     new_id = cur.fetchone()[0]
     conn.commit()
@@ -120,9 +151,22 @@ def get_course(course_id: int):
     return {"id": row[0], "title": row[1], "teacher": row[2], "seats": row[3]}
 
 @app.put("/api/courses/{course_id}", response_model=CourseResponse)
-def update_course_put(course_id: int, course_data: CourseCreate):
+def update_course_put(course_id: int, course_data: CourseCreate, current_user: dict = Depends(get_current_user)):
     conn = get_db_connection()
     cur = conn.cursor()
+    
+    #Проверка владельца
+    cur.execute("SELECT owner_id FROM courses WHERE id = %s", (course_id,))
+    row = cur.fetchone()
+    if not row:
+        cur.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="Курс не найден")
+    if row[0] != current_user["id"]:
+        cur.close()
+        conn.close()
+        raise HTTPException(status_code=403, detail="Нельзя изменять чужую запись")
+
     cur.execute(
         "UPDATE courses SET title = %s, teacher = %s, seats = %s WHERE id = %s RETURNING id",
         (course_data.title, course_data.teacher, course_data.seats, course_id)
@@ -138,7 +182,7 @@ def update_course_put(course_id: int, course_data: CourseCreate):
     return {"id": course_id, **course_data.model_dump()}
 
 @app.patch("/api/courses/{course_id}", response_model=CourseResponse)
-def update_course_patch(course_id: int, course_update: CourseUpdate):
+def update_course_patch(course_id: int, course_update: CourseUpdate, current_user: dict = Depends(get_current_user)):
     update_data = course_update.model_dump(exclude_unset=True)
 
     if not update_data:
@@ -147,6 +191,17 @@ def update_course_patch(course_id: int, course_update: CourseUpdate):
     conn = get_db_connection()
     cur = conn.cursor()
     
+    cur.execute("SELECT owner_id FROM courses WHERE id = %s", (course_id,))
+    row = cur.fetchone()
+    if not row:
+        cur.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="Курс не найден")
+    if row[0] != current_user["id"]:
+        cur.close()
+        conn.close()
+        raise HTTPException(status_code=403, detail="Нельзя изменять чужую запись")
+
     set_clauses = [f"{key} = %s" for key in update_data.keys()]
     values = list(update_data.values())
     values.append(course_id)
@@ -165,9 +220,21 @@ def update_course_patch(course_id: int, course_update: CourseUpdate):
     return {"id": updated[0], "title": updated[1], "teacher": updated[2], "seats": updated[3]}
 
 @app.delete("/api/courses/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_course(course_id: int):
+def delete_course(course_id: int, current_user: dict = Depends(get_current_user)):
     conn = get_db_connection()
     cur = conn.cursor()
+    
+    cur.execute("SELECT owner_id FROM courses WHERE id = %s", (course_id,))
+    row = cur.fetchone()
+    if not row:
+        cur.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="Курс не найден")
+    if row[0] != current_user["id"]:
+        cur.close()
+        conn.close()
+        raise HTTPException(status_code=403, detail="Нельзя изменять чужую запись")
+
     cur.execute("DELETE FROM courses WHERE id = %s RETURNING id", (course_id,))
     deleted = cur.fetchone()
     conn.commit()
