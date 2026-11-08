@@ -78,3 +78,32 @@ Content-Type: application/json
 
 ### Поиск по названию (без учета регистра)
 GET {{base}}/api/courses?q=дифференциальные
+
+### Регистрация нового пользователя
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "secret123"
+}
+
+### Получить свои данные (Basic Auth)
+#Вкладка "Auth" в запросе, "Basic Auth" и testuser/secret123
+GET {{base}}/auth/me
+
+### Создать курс (с авторизацией)
+POST {{base}}/api/courses
+Content-Type: application/json
+
+{
+  "title": "Курс от testuser",
+  "teacher": "Петров",
+  "seats": 10
+}
+
+### Попытка изменить чужой курс (403)
+PATCH {{base}}/api/courses/1
+Content-Type: application/json
+
+{ "seats": 5 }

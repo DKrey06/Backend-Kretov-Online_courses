@@ -29,5 +29,16 @@
     "violate": { "method": "POST", "path": "/api/courses/{id}/enrollments", "body": { "student": "Петров", "email": "petrov@example.com", "enrolled_at": "2026-10-02" } },
     "expect_status": 409
   },
-  "stats_path": "/api/courses/stats"
+  "stats_path": "/api/courses/stats",
+  "auth": {
+    "scheme": "basic",
+    "register_path": "/auth/register",
+    "login_path": "/auth/me",
+    "me_path": "/auth/me",
+    "login_field": "username",
+    "password_field": "password",
+    "token_field": "access_token",
+    "owner_field": "owner_id",
+    "admin": { "username": "admin", "password": "admin-test-pass" }
+  }
 }
